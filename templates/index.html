@@ -1,0 +1,87 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Dance Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-light navbar-expand-md">
+                <div class="container-fluid"><a class="navbar-brand" href="">Dance Generator</a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                    <div class="collapse navbar-collapse" id="navcol-1">
+                        <ul class="navbar-nav">
+                            <li class="nav-item"><a class="nav-link active" href="">Record New</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for("results") }}">Results</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+    </div>
+    <section class="py-4 py-xl-5">
+        <div class="container">
+            <div class="bg-dark border rounded border-0 border-dark overflow-hidden">
+                    <div class="row g-0">
+                        <div class="col-md-6 col-lg-4 offset-lg-0">
+                            <div class="text-white p-4 p-md-5">
+                                <h2 class="fw-bold text-white mb-3">Select Music Track and Record Video</h2>
+                                <div class="my-3">
+                                    <div class="dropdown d-inline"><button class="btn btn-primary btn-lg dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button" style="margin-right: 8px;">Dropdown </button>
+                                            <div class="dropdown-menu">
+                                                {% for song in songs %}
+                                                    <a class="dropdown-item" onclick="setMusicName('{{ song[1] }}', {{ song[0] }})">{{song[1]}}</a>
+                                                {% endfor %}
+                                            </div>
+                                            <input type="submit" hidden value="Stop/Start" name="stop" />
+                                            <input type="submit" hidden value="Start/Stop Recording" />
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ url_for('tasks') }}">
+                                    <textarea id="songname" name="song" readonly="true" spellcheck="false" style="margin-bottom: 8px; resize:none">{{ songs[music_id - 1][1] if music_id else "" }}</textarea>
+                                    <textarea id="songindex" name="songindex" hidden>{{ music_id if music_id else -1 }}</textarea>
+                                    {% if not rec %}
+                                    <audio id="audio" controls loop style="margin-bottom: 8px">
+                                        {% if music_id %}
+                                        <source src="{{ url_for('get_music_file', sound_id=music_id) }}" type="audio/wav">
+                                        {% endif %}
+                                    </audio>
+                                    {% else %}
+                                    <audio id="audio" controls loop autoplay style="margin-bottom: 8px">
+                                        {% if music_id %}
+                                        <source src="{{ url_for('get_music_file', sound_id=music_id) }}" type="audio/wav">
+                                        {% endif %}
+                                    </audio>
+                                    {% endif %}
+                                    <p class="mb-4">After selecting a music track, record a video max 10 seconds long.</p>
+                                    {% if not loading %}
+                                        {% if not rec %}
+                                        <div><button id="recordingbutton" name="rec" class="btn btn-light btn-lg disabled align-items-lg-end" type="submit" disabled="" style="margin-right: 15px;">Record Video&nbsp;<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" class="fs-3" style="color: var(--bs-green);">
+                                                <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                                                <path d="M188.3 147.1C195.8 142.8 205.1 142.1 212.5 147.5L356.5 235.5C363.6 239.9 368 247.6 368 256C368 264.4 363.6 272.1 356.5 276.5L212.5 364.5C205.1 369 195.8 369.2 188.3 364.9C180.7 360.7 176 352.7 176 344V167.1C176 159.3 180.7 151.3 188.3 147.1V147.1zM512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256zM256 48C141.1 48 48 141.1 48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48z"></path>
+                                            </svg></button><code style="font-size: 20px;">00:10</code></div>
+                                        {% else %}
+                                        <div><button id="recordingbutton" name="rec" class="btn btn-light btn-lg align-items-lg-end" type="submit" style="margin-right: 15px;">Recording...&nbsp;<svg class="fs-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" style="color: var(--bs-red);">
+                                                <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                                                <path d="M328 160h-144C170.8 160 160 170.8 160 184v144C160 341.2 170.8 352 184 352h144c13.2 0 24-10.8 24-24v-144C352 170.8 341.2 160 328 160zM256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464z"></path>
+                                            </svg></button><code id="timer" style="font-size: 20px;">00:10</code></div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div><button id="recordingbutton" name="rec" class="btn btn-light btn-lg align-items-lg-end" disabled type="submit" style="margin-right: 15px; margin-bottom: 8px;">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                Loading...
+                                            </button><code id="loading-feedback" style="font-size: 20px;">-/- frames</code></div>
+                                        <div class="progress">
+                                            <div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                                        </div>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-7 offset-lg-1 order-first order-md-last" style="min-height: 250px;"><img class="w-100 h-100 fit-cover" src="{{ url_for('video_feed') }}" height="100%" width="100%"></div>
+                    </div>
+                </div>
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap.js') }}"></script>
+    <script src="{{ url_for('static', filename='d3.js') }}"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>

@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Dance Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}/">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar navbar-light navbar-expand-md">
+            <div class="container-fluid"><a class="navbar-brand" href="{{ url_for('index') }}">Dance Generator</a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navcol-1">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Record New</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="">Results</a></li>
+                        <li class="nav-item"></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <section class="py-4 py-xl-5">
+        <div class="container">
+            <div class="bg-dark border rounded border-0 border-dark overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-6 col-lg-4 offset-lg-0">
+                        <div class="text-white p-4 p-md-5">
+                            <h2 class="fw-bold text-white mb-3">Dance Visualization</h2>
+                            <p class="mb-4">You can either upload a file in the COCO-format or record a video and generate keypoints that way.</p>
+                            <div class="my-3"></div><input class="form-control-lg" type="file" id="file" style="margin-bottom: 12px;" onchange="readFile(this)">
+                            <div style="margin-bottom: 15px;"><button class="btn btn-light btn-lg disabled align-items-lg-end" id="replay" type="button" style="margin-right: 15px;" disabled=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" class="fs-3" style="color: var(--bs-primary);">
+                                        <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                                        <path d="M256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C201.7 512 151.2 495 109.7 466.1C95.2 455.1 91.64 436 101.8 421.5C111.9 407 131.8 403.5 146.3 413.6C177.4 435.3 215.2 448 256 448C362 448 448 362 448 256C448 149.1 362 64 256 64C202.1 64 155 85.46 120.2 120.2L151 151C166.1 166.1 155.4 192 134.1 192H24C10.75 192 0 181.3 0 168V57.94C0 36.56 25.85 25.85 40.97 40.97L74.98 74.98C121.3 28.69 185.3 0 255.1 0L256 0zM256 128C269.3 128 280 138.7 280 152V246.1L344.1 311C354.3 320.4 354.3 335.6 344.1 344.1C335.6 354.3 320.4 354.3 311 344.1L239 272.1C234.5 268.5 232 262.4 232 256V152C232 138.7 242.7 128 256 128V128z"></path>
+                                    </svg></button><button class="btn btn-light btn-lg disabled align-items-lg-end" id="play" type="button" disabled="" style="margin-right: 15px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" class="fs-3" id="start" style="color: var(--bs-green);">
+                                        <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                                        <path d="M188.3 147.1C195.8 142.8 205.1 142.1 212.5 147.5L356.5 235.5C363.6 239.9 368 247.6 368 256C368 264.4 363.6 272.1 356.5 276.5L212.5 364.5C205.1 369 195.8 369.2 188.3 364.9C180.7 360.7 176 352.7 176 344V167.1C176 159.3 180.7 151.3 188.3 147.1V147.1zM512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256zM256 48C141.1 48 48 141.1 48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48z"></path>
+                                    </svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor" class="fs-3 visually-hidden" id="stop" style="color: var(--bs-red);">
+                                        <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                                        <path d="M200 160C186.8 160 176 170.8 176 184v144C176 341.3 186.8 352 200 352S224 341.3 224 328v-144C224 170.8 213.3 160 200 160zM312 160C298.8 160 288 170.8 288 184v144c0 13.25 10.75 24 24 24s24-10.75 24-24v-144C336 170.8 325.3 160 312 160zM256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464z"></path>
+                                    </svg></button></div>
+                            <p style="margin-bottom: 0px;">Speed</p>
+                            <div><code id="speedtext" style="margin-right: 0px;">24</code><div class="wrap float-start">
+                              <input id="speed" type="range" class="range" min="0" max="100" step="1" value="24">
+                              <div class="track">
+                                <div id="speedtrack" class="track-inner"></div>
+                              </div>
+                              <div id="speedthumb" class="thumb"></div>
+                            </div>
+                                <p style="margin-bottom: 0px;margin-top: 9px;">Frame Slider</p>
+                            </div>
+                            <div><code id="steptext" style="margin-right: 0px;">0</code><div class="wrap float-start">
+                              <input id="step" type="range" class="range" min="0" max="100" step="1" value="15">
+                              <div class="track">
+                                <div id="steptrack" class="track-inner"></div>
+                              </div>
+                              <div id="stepthumb" class="thumb"></div>
+                            </div></div>
+                            <div>
+                            {% if music_id %}
+                                <audio id="audio" controls autoplay loop style="margin-top: 8px">
+                                    {% if music_id %}
+                                    <source src="{{ url_for('get_music_file', sound_id=music_id) }}" type="audio/wav">
+                                    {% endif %}
+                                </audio>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-7 offset-lg-1 order-first order-md-last" id="svgContainer" style="min-height: 250px;background: var(--bs-gray-400);"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section></section>
+    <script src="{{ url_for('static', filename='bootstrap.js') }}"></script>
+    <script src="{{ url_for('static', filename='d3.js') }}"></script>
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
+    <script src="{{ url_for('static', filename='slider.js') }}"></script>
+</body>
+
+</html>
