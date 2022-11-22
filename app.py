@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import argparse
 from pathlib import Path
 from threading import Thread
 
@@ -13,13 +14,21 @@ from fact.config import audio_config, motion_config, multi_model_config
 from fact.fact import FACTModel
 from infer_keypoints import Infer
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--fps', help='fps. The fps of the video recording and model prediction, can either be 15 (faster, but less smooth) or 30. defaults: 30', required=False, type=int, default=30)
+parser.add_argument('-device', '--device', help='device the model is run at, gpu is way faster than cpu. default cuda:0 ', required=False, type=str, default="cuda:0")
+
+args = parser.parse_args()
+
+
 global rec_frame, switch, rec, out, music_id, video_name, device
 
 switch = 1
 rec = 0
 music_id = -1
 video_name = ''
-device = "cuda:0"
+device = args.device
 
 
 def fetch_model(model_path: str, fps: int = 30, out_dim: int = 34, pred_length: int = 20):
@@ -48,19 +57,26 @@ def fetch_model(model_path: str, fps: int = 30, out_dim: int = 34, pred_length: 
 
     model = FACTModel(audio_config, motion_config, multi_model_config, out_dim=out_dim, pred_length=pred_length)
     checkpoint = torch.load(model_path, map_location='cpu')
-    model.load_state_dict(checkpoint['state_dict'])
+    model.load_state_dict(checkpoint)
     return model.to(device)
 
+if args.fps == 30:
+    model = fetch_model("./checkpoints/30_fps.pth", fps=30)
+    fps = 30
+    inp_frames = 90
+else:
+    model = fetch_model("./checkpoints/15_fps.pth", fps=15)
+    fps = 15
+    inp_frames = 60
 
-model = fetch_model("/home/jon/2D/30fps/2022-11-13/epoch_150/checkpoint-epoch150.pth")
 global infer
 infer = Infer(
     dance_model=model,
     cfg_model="COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml",
-    fps=30,
+    fps=fps,
     seq_length=20,
-    inp_frames=90,
-    device="cuda:0",
+    inp_frames=inp_frames,
+    device=args.device,
     cut=5,
 )
 
@@ -81,7 +97,7 @@ camera = cv2.VideoCapture(0)
 def record(out):
     global rec_frame
     while (rec):
-        time.sleep(1 / 30)  # 20 FPS
+        time.sleep(1 / fps)  # 20 FPS
         out.write(cv2.cvtColor(rec_frame, cv2.COLOR_BGR2RGB))
 
 
